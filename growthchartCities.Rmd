@@ -1,0 +1,305 @@
+---
+title: Comparisons of Population Growth in some of the largest Urban Agglomerations
+  in India
+author: "Anirban Pal"
+date: "September 26, 2014"
+output: html_document
+---
+
+
+Here I will try to plot a few comparative population growth charts for a selected number of urban agglomerations over a period of 60 years based on the data from the following source:
+http://esa.un.org/unpd/wup/CD-ROM/WUP2014_XLS_CD_FILES/WUP2014-F12-Cities_Over_300K.xls
+
+
+```{r, echo=FALSE}
+setwd("~/Desktop/Dropbox/DataAnalysis/IndiaCitiesUNData")
+## First we read the Excel file from the url using "gdata" package.
+data <- read.csv("~/Desktop/Dropbox/DataAnalysis/IndiaCitiesUNData/cities.csv", header=FALSE)
+
+# We then clean up the file by removing unnecessary rows in the dataframe and renaming the variable names such that they don't have spaces in them.
+
+names(data) <- c("Index", "CountryCode", "Country", "CityCode", "UrbanAgglomeration", "Note", "Latitude", "Longitude", "pop1950", "pop1955", "pop1960", "pop1965", "pop1970", "pop1975", "pop1980", "pop1985", "pop1990", "pop1995", "pop2000", "pop2005", "pop2010", "pop2015", "pop2020", "pop2025", "pop2030")
+
+data$CountryCode<-as.factor(data$CountryCode)
+
+i<-1
+for(i in 9:25) data[i]<-data[i]*1000
+
+# Lets create a "test" dataframe with population in different years for a selected large cities in India.
+
+
+test<-data.frame(data$Index, data$UrbanAgglomeration, data$pop1950, data$pop1955, data$pop1960, data$pop1965, data$pop1970, data$pop1975, data$pop1980, data$pop1985, data$pop1990, data$pop1995, data$pop2000, data$pop2005, data$pop2010, data$pop2015, data$pop2020, data$pop2025, data$pop2030)
+
+## I find the test$data.Index for the following cities:
+## Coimbatore - 748
+## Kolkata      798
+## Mumbai       816
+## Ahmedabad    710
+## Raipur       834
+## Bangalore    725
+## Bhopal       736
+## Chennai      746
+## Hyderabad    775
+## Patna        830
+## Kanpur       793
+## Vijayawada   870
+## Surat        855
+## Agra         709       
+## Indore       778
+## Jaipur       780
+## Delhi        753
+## Pune         832
+test1 <- subset(test, data.Index %in% c(748, 798, 816, 710, 834, 725, 736, 746, 775, 830, 793, 870, 855, 709, 778, 780, 753, 832))
+t<-subset(test1, select=c(-1))
+trans<-as.data.frame(t(t))
+names(trans)<- c("Agra", "Ahmadabad", "Bangalore", "Bhopal", "Chennai", "Coimbatore", "Delhi", "Hyderabad",	"Indore",	"Jaipur",	"Kanpur", "Kolkata", "Mumbai", "Patna", "Pune", "Raipur", "Surat", "Vijayawada")
+d<-trans[-1, ]
+d$year<-c(1950, 1955, 1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030)
+
+d$Agra<-as.numeric(as.character(d$Agra))
+d$Ahmadabad<-as.numeric(as.character(d$Ahmadabad))
+d$Bangalore<-as.numeric(as.character(d$Bangalore))
+d$Bhopal<-as.numeric(as.character(d$Bhopal))
+d$Chennai<-as.numeric(as.character(d$Chennai))
+d$Coimbatore<-as.numeric(as.character(d$Coimbatore))
+d$Delhi<-as.numeric(as.character(d$Delhi))
+d$Hyderabad<-as.numeric(as.character(d$Hyderabad))
+d$Indore<-as.numeric(as.character(d$Indore))
+d$Jaipur<-as.numeric(as.character(d$Jaipur))
+d$Kanpur<-as.numeric(as.character(d$Kanpur))
+d$Kolkata<-as.numeric(as.character(d$Kolkata))
+d$Mumbai<-as.numeric(as.character(d$Mumbai))
+d$Patna<-as.numeric(as.character(d$Patna))
+d$Pune<-as.numeric(as.character(d$Pune))
+d$Raipur<-as.numeric(as.character(d$Raipur))
+d$Surat<-as.numeric(as.character(d$Surat))
+d$Vijayawada<-as.numeric(as.character(d$Vijayawada))
+
+
+library(reshape2)
+wide<-melt(d, id.vars="year", variable.name="city", value.name="population")
+wide$population<-as.numeric(wide$population)
+
+
+wide1<-subset(wide, wide$city=="Surat" | wide$city=="Ahmadabad" | wide$city=="Hyderabad" | wide$city=="Bangalore" |  wide$city=="Bhopal" | wide$city=="Kanpur" | wide$city=="Coimbatore" | wide$city=="Raipur" | wide$city=="Patna" | wide$city=="Jaipur" | wide$city=="Kolkata" | wide$city=="Mumbai" | wide$city=="Delhi" | wide$city=="Chennai" | wide$city=="Agra" | wide$city=="Indore" | wide$city=="Pune")
+wide2<-subset(wide1, wide$year<2015)
+
+ggplot(wide2, aes(year, population)) + geom_line(stat="identity", aes(color=city)) + labs(x="Year", y="Population in millions") + ggtitle("Population growth in major Indian Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(5000000, 10000000, 15000000, 20000000, 25000000), labels=c(5, 10, 15, 20, 25))
+
+## wide11 <- subset(wide, wide$city=="Surat" | wide$city=="Ahmadabad" | wide$city=="Hyderabad" |  wide$city=="Bhopal" | wide$city=="Kanpur" | wide$city=="Coimbatore" | wide$city=="Raipur" | wide$city=="Patna" | wide$city=="Jaipur" | wide$city=="Agra" | wide$city=="Indore" | wide$city=="Pune")
+##vwide22<-subset(wide11, wide$year<2015)
+
+## ggplot(wide22, aes(year, population)) + geom_line(stat="identity", aes(color=city)) + labs(x="Year", y="Population in millions") + ggtitle("Population growth in major Indian Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(5000000, 10000000, 15000000, 20000000, 25000000), labels=c(5, 10, 15, 20, 25))
+
+
+```
+
+Now lets make some plots of groups of urban agglomerations that would allow us to discern some of the differences in growth rates among them.
+
+```{r, echo=FALSE}
+wide14<-subset(wide, wide$city=="Kolkata" | wide$city=="Mumbai" | wide$city=="Delhi" | wide$city=="Chennai")
+wide24<-subset(wide14, wide$year<2015)
+
+ggplot(wide24, aes(year, population)) + geom_line(stat="identity", aes(color=city)) + labs(x="Year", y="Population in millions") + ggtitle("Population growth in major Indian Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(1000000, 2500000, 5000000, 7500000, 10000000, 15000000, 20000000, 25000000), labels=c(1, 2.5, 5, 7.5, 10, 15, 20, 25))
+```
+
+
+
+```{r, echo=FALSE}
+wide13<-subset(wide, wide$city=="Surat" | wide$city=="Kanpur" | wide$city=="Agra" | wide$city=="Pune" | wide$city=="Jaipur")
+wide23<-subset(wide13, wide$year<2015)
+
+ggplot(wide23, aes(year, population)) + geom_line(stat="identity", aes(color=city)) + labs(x="Year", y="Population in millions") + ggtitle("Population growth in major Indian Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(1000000, 2500000, 5000000, 7500000, 10000000, 15000000, 20000000, 25000000), labels=c(1, 2.5, 5, 7.5, 10, 15, 20, 25))
+```
+
+
+```{r, echo=FALSE}
+
+wide11<-subset(wide, wide$city=="Chennai" | wide$city=="Ahmadabad" | wide$city=="Hyderabad" | wide$city=="Bangalore")
+wide21<-subset(wide11, wide$year<2015)
+
+ggplot(wide21, aes(year, population)) + geom_line(stat="identity", aes(color=city)) + labs(x="Year", y="Population in millions") + ggtitle("Population growth in major Indian Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(1000000, 2500000, 5000000, 7500000, 10000000, 15000000, 20000000, 25000000), labels=c(1, 2.5, 5, 7.5, 10, 15, 20, 25))
+```
+
+```{r, echo=FALSE}
+wide12<-subset(wide, wide$city=="Raipur" | wide$city=="Bhopal" | wide$city=="Patna" | wide$city=="Coimbatore")
+wide22<-subset(wide12, wide$year<2015)
+
+ggplot(wide22, aes(year, population)) + geom_line(stat="identity", aes(color=city)) + labs(x="Year", y="Population in millions") + ggtitle("Population growth in major Indian Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(1000000, 2500000, 5000000, 7500000, 10000000, 15000000, 20000000, 25000000), labels=c(1, 2.5, 5, 7.5, 10, 15, 20, 25))
+```
+
+
+In 2010, the population of million plus urban agglomerations in India is as follows:
+
+```{r, echo=FALSE}
+IndianMilPlus<-subset(data, pop2010>1000000 & Country=="India")
+
+ggplot(IndianMilPlus, aes(x=reorder(UrbanAgglomeration, -(pop2010)), y=pop2010)) + geom_bar(stat="identity", fill="darkred") + labs(x="Urban Agglomeration", y="Population in 2010 in millions") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("2010 Population of Million Plus Indian Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(1000000, 2500000, 5000000, 7500000, 10000000, 15000000, 20000000, 25000000), labels=c(1, 2.5, 5, 7.5, 10, 15, 20, 25))
+```
+
+The above graph has 49 cities. Now if we look at the top 49 cities based on population in 1980, can you spot 
+
+```{r, echo=FALSE}
+top49in1980<-subset(data, pop1980>365000 & Country=="India")
+
+ggplot(top49in1980, aes(x=reorder(UrbanAgglomeration, -(pop1980)), y=pop1980)) + geom_bar(stat="identity", fill="darkred") + labs(x="Urban Agglomeration", y="Population in 1980 in millions") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("49 largest Indian Urban Agglomerations in 1980") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(1000000, 2500000, 5000000, 7500000, 10000000, 15000000, 20000000, 25000000), labels=c(1, 2.5, 5, 7.5, 10, 15, 20, 25))
+```
+You can see which cities are in the first of the above two graphs but not in the second or vice versa. (Jalandhar, Bareilly, Asansol, Ajmer, Aurangabad, Hubli-Dharwad, Thrissur, Solapur, Salem, Raipur, Kannur, for example.) We may plot their growth trajectories and see why they moved up or down in the population ranking.
+
+Now lets look at the change in population between 2000 and 2010 and how that varies with the agglomeration's 2010 population.
+
+```{r}
+indiancities1<-subset(data, Country=="India")
+indiancities1$absgrowth2000_2010<-indiancities1$pop2010-indiancities1$pop2000
+
+ggplot(indiancities1, aes(x=(pop2010), y=absgrowth2000_2010)) + geom_point(alpha=0.25) + geom_text(aes(label=UrbanAgglomeration), size=4, alpha=0.5) + geom_smooth(method = "lm") + coord_cartesian(xlim = c(100000, 2000000), ylim = c(0, 500000)) 
+```
+
+There is a linear relationship between population size in 2010 and the increase in population between 2000 and 2010. That is expected given that larger cities will be What is the rank of the city such that all cities larger than that city had nearly the same combined absolute increase in population between 2000 and 2010 as that of all the cities that are smaller than the selected city? 
+
+Out of the 166 largest urban agglomerations in India for which data is available from the United Nations Population Division
+
+```{r}
+indiancities1<-subset(data, Country=="India")
+indiancities1$absgrowth2000_2010<-indiancities1$pop2010-indiancities1$pop2000
+sortedindiancities<-indiancities1[order(-indiancities1$pop2010),]
+
+i<-1
+sumgrowthabove<-c(1:166)
+sumgrowthbelow<-c(1:166)
+a<-1
+while(a<=166) {
+  sumgrowthabove[a]<-0 
+  sumgrowthbelow[a]<-0
+  a<-a+1
+  }
+while(i !> 166) {
+  h<-i+1;
+  while(h <= length(sortedindiancities$Index)) {
+    sumgrowthbelow[i] <- sumgrowthbelow[i] + sortedindiancities$absgrowth2000_2010[h] 
+    h<-h+1
+    } 
+  j<-i-1;
+  while(j >= 1) {
+    sumgrowthabove[i] <- sumgrowthabove[i] + sortedindiancities$absgrowth2000_2010[j]
+    j<-j-1
+    }
+  i<-i+1
+  return sumgrowthbelow, sumgrowthabove
+
+  }
+
+```
+
+If we do the same for the period 1980 to 1990 we get 155.
+
+```{r}
+indiancities1<-subset(data, Country=="India")
+indiancities1$absgrowth1980_1990<-indiancities1$pop1990-indiancities1$pop1980
+sortedindiancities1<-indiancities1[order(indiancities1$pop1990),]
+
+i<-length(indiancities1$Index)/2
+sumgrowthabove<-0
+sumgrowthbelow<-0
+while(sumgrowthabove-sumgrowthbelow>=0) {
+  sumgrowthabove<-0;
+  sumgrowthbelow<-0;
+  j<-i+1;
+  while(j <= length(sortedindiancities1$Index)) {sumgrowthabove <- sumgrowthabove + sortedindiancities1$absgrowth1980_1990[j]; j<-j+1}; 
+  j<-i-1;
+  while(j >= 1) {sumgrowthbelow <- sumgrowthbelow + sortedindiancities1$absgrowth1980_1990[j]; j<-j-1};
+  i<-i+1
+  }
+  
+print(i)
+```
+
+1960-1970 period -> 154
+1980-1990 period -> 155
+2000-2010 period -> 154
+
+
+
+```{r}
+indiancities1<-subset(data, Country=="India")
+indiancities1$absgrowth1960_1970<-indiancities1$pop1970-indiancities1$pop1960
+sortedindiancities2<-indiancities1[order(indiancities1$pop1970),]
+
+i<-length(indiancities1$Index)/2
+sumgrowthabove<-0
+sumgrowthbelow<-0
+while(sumgrowthabove-sumgrowthbelow>=0) {
+  sumgrowthabove<-0;
+  sumgrowthbelow<-0;
+  j<-i+1;
+  while(j <= length(sortedindiancities2$Index)) {sumgrowthabove <- sumgrowthabove + sortedindiancities2$absgrowth1960_1970[j]; j<-j+1}; 
+  j<-i-1;
+  while(j >= 1) {sumgrowthbelow <- sumgrowthbelow + sortedindiancities2$absgrowth1960_1970[j]; j<-j-1};
+  i<-i+1
+  }
+  
+print(i)
+```
+
+
+* Lets test the hypothesis that larger urban agglomerations grew slower in 2000-2010 period in absolute terms than plot the following scatterplot x="population in 2010"; y="The increase in population (in absolute terms, not in terms of growth percentage) between 2000 and 2001 minus the increase in population between 1980 and 1990 and then this divided by the increase in population between 1980 and 1990."
+```{r, echo=TRUE}
+library("ggplot2")
+indiancities<-subset(data, Country=="India")
+indiancities$absgrowth1980_1990<-indiancities$pop1990-indiancities$pop1980
+indiancities$absgrowth2000_2010<-indiancities$pop2010-indiancities$pop2000
+indiancities$growth2000_2010<-indiancities$absgrowth2000_2010*100/indiancities$pop2000
+
+ggplot(data=indiancities, aes(x=log(pop2000), y=(growth2000_2010))) + geom_point(alpha=0.1) + geom_text(aes(label=UrbanAgglomeration), size=3, alpha=0.8) + geom_smooth(method = "lm") + geom_smooth(color="red") + labs(x="Log of population in year 2000", y="% growth in population between 2000 and 2010") + ggtitle("Population growth rate in 2000-2010 for Indian cities vs. population in 2000") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11))
+
+indiancities$diffgrowth<-(indiancities$absgrowth2000_2010-indiancities$absgrowth1980_1990)/indiancities$absgrowth1980_1990
+
+ggplot(data=indiancities, aes(x=log(pop2010), y=diffgrowth)) + geom_point() + geom_text(aes(label=UrbanAgglomeration), size=3, alpha=0.5) + geom_smooth(method = "lm")
+```
+
+Lets do the same thing as above but for Chinese cities to see how the relationship of growth rates are related to city size.
+
+```{r}
+library("ggplot2")
+Chinese<-subset(data, Country=="China")
+Chinese$absgrowth1980_1990<-Chinese$pop1990-Chinese$pop1980
+Chinese$absgrowth2000_2010<-Chinese$pop2010-Chinese$pop2000
+Chinese$growth2000_2010<-Chinese$absgrowth2000_2010*100/Chinese$pop2000
+
+ggplot(data=Chinese, aes(x=log(pop2000), y=(growth2000_2010))) + geom_point(alpha=0.1) + geom_text(aes(label=UrbanAgglomeration), size=3, alpha=0.8) + geom_smooth(method = "lm") + geom_smooth(color="red") + labs(x="Log of population in year 2000", y="% growth in population between 2000 and 2010") + ggtitle("Population growth rate in 2000-2010 vs. population in 2000 for Chinese cities") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11))
+```
+
+And for the world:
+
+```{r}
+library("ggplot2")
+
+data$absgrowth1980_1990<-data$pop1990-data$pop1980
+data$absgrowth2000_2010<-data$pop2010-data$pop2000
+data$growth2000_2010<-data$absgrowth2000_2010*100/data$pop2000
+
+ggplot(data=data, aes(x=log(pop2000), y=(growth2000_2010))) + geom_point(alpha=0.2) + geom_smooth(method = "lm") + geom_smooth(color="red") + geom_text(aes(label=UrbanAgglomeration), size=3, alpha=0.8) + labs(x="Log of population in year 2000", y="% growth in population between 2000 and 2010") + ggtitle("Population growth rate in 2000-2010 vs. population in 2000 for all cities of the world") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11))
+```
+
+
+
+What did the above graph look like if we consider the periods 1960-1970 and 1980-1990 instead of 1980-1990 and 2000-2010?
+
+```{r, echo=TRUE}
+indiancities<-subset(data, Country=="India" & pop2010<2500000)
+indiancities$absgrowth1980_1990<-indiancities$pop1990-indiancities$pop1980
+indiancities$absgrowth1960_1970<-indiancities$pop1970-indiancities$pop1960
+indiancities$diffgrowth1<-(indiancities$absgrowth1980_1990-indiancities$absgrowth1960_1970)/indiancities$absgrowth1960_1970
+
+ggplot(data=indiancities, aes(x=log(pop1990), y=diffgrowth1)) + geom_point() + geom_text(aes(label=UrbanAgglomeration), size=3, alpha=0.5) + geom_smooth(method = "lm")
+```
+
+Its not useful to look at the regression lines in either of the two scatterplots because the relationship is not linear. But especially for the second plot, the three outliers make the regression line not the best way to look at the relationship between the two axes. (All three outliers are from Kerala, which had some adjustments made to how urban agglomerations are defined geographically making their population data incomparable with others.) But nonetheless, we can see that the there is a clear negative relationship in the first scatterplot and there is a slightly positive relationship in the second scatterplot. 
+
+Conclusions:
+
+1) Despite the fact that all urban agglomerations that had a population of 1 million or more in 2010 have been growing in population, there were considerable differences in the pace of their growth.
+
+2) Delhi's growth relative to Kolkata, Mumbai, or Chennai shows that diseconomies of scale trigger at different population levels in different cities. Delhi's abundant land supply (mostly through conversion of agricultural land to urban land use, some as a result of massive political corruption) might be an explanation.
+
+3) Similarly, Surat grew much faster than cities like Kanpur (think of the tanneries polluting the rivers). Plague epidemic helped to clean up Surat and develop its diamond polishing industry.

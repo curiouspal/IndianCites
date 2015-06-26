@@ -1,0 +1,213 @@
+---
+title: "Chinese cities"
+author: "Anirban Pal"
+date: "September 30, 2014"
+output: html_document
+---
+
+
+```{r, echo=FALSE}
+## First we read the Excel file from the url using "gdata" package.
+data1 <- read.csv("cities.csv", header=FALSE)
+
+# We then clean up the file by removing unnecessary rows in the dataframe and renaming the variable names such that they don't have spaces in them.
+
+names(data1) <- c("Index", "CountryCode", "Country", "CityCode", "UrbanAgglomeration", "Note", "Latitude", "Longitude", "pop1950", "pop1955", "pop1960", "pop1965", "pop1970", "pop1975", "pop1980", "pop1985", "pop1990", "pop1995", "pop2000", "pop2005", "pop2010", "pop2015", "pop2020", "pop2025", "pop2030")
+
+data1$CountryCode<-as.factor(data1$CountryCode)
+
+i<-1
+for(i in 9:25) data1[i]<-data1[i]*1000
+
+
+## Lets now try to see whether Chinese large cities grew faster than smaller cities.
+
+ChineseCities<-subset(data1, Country=="China")
+ChineseCities$absgrowth2000_2010<-ChineseCities$pop2010-ChineseCities$pop2000
+ChineseCities$absgrowth1960_1970<-ChineseCities$pop1970-ChineseCities$pop1960
+sortedchinesecities<-ChineseCities[order(ChineseCities$pop2010),]
+
+library(ggplot2)
+ggplot(ChineseCities, aes(log10(pop2010), log10(absgrowth2000_2010))) + geom_text(aes(label=UrbanAgglomeration), size=4, alpha=0.5) + geom_smooth(method=lm) + labs(x="Log of Population in 2010 (base 10)", y="Log of Absolute Growth in Population in 2000-2010 (base 10)") + ggtitle("Larger cities in China grew in absolute terms much faster than smaller cities") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) 
+
+ggplot(ChineseCities, aes(log10(pop1970), log10(absgrowth1960_1970))) + geom_text(aes(label=UrbanAgglomeration), size=4, alpha=0.5) + labs(x="Log of Population in 1970 (base 10)", y="Log of Absolute Growth in Population in 1960-1970 (base 10)") + ggtitle("Larger cities in China grew in absolute terms much faster than smaller cities") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11))
+
+
+i<-length(ChineseCities$Index)/2
+sumgrowthabove<-0
+sumgrowthbelow<-0
+while(sumgrowthabove-sumgrowthbelow>=0) {
+  sumgrowthabove<-0;
+  sumgrowthbelow<-0;
+  j<-i+1;
+  while(j <= length(sortedchinesecities$Index)) {sumgrowthabove <- sumgrowthabove + sortedchinesecities$absgrowth2000_2010[j]; j<-j+1}; 
+  j<-i-1;
+  while(j >= 1) {sumgrowthbelow <- sumgrowthbelow + sortedchinesecities$absgrowth2000_2010[j]; j<-j-1};
+  i<-i+1
+  }
+print(i)
+
+
+## For 2000-2010 period: 364
+## For 1980-1990 period: 342
+## For 1960-1970 period: 200
+
+ChineseCities<-subset(data1, Country=="China")
+ChineseCities$absgrowth1980_1990<-ChineseCities$pop1990-ChineseCities$pop1980
+sortedchinesecities1<-ChineseCities[order(ChineseCities$pop1990),]
+
+i<-length(ChineseCities$Index)/2
+sumgrowthabove<-0
+sumgrowthbelow<-0
+while(sumgrowthabove-sumgrowthbelow>=0) {
+  sumgrowthabove<-0;
+  sumgrowthbelow<-0;
+  j<-i+1;
+  while(j <= length(sortedchinesecities1$Index)) {sumgrowthabove <- sumgrowthabove + sortedchinesecities1$absgrowth1980_1990[j]; j<-j+1}; 
+  j<-i-1;
+  while(j >= 1) {sumgrowthbelow <- sumgrowthbelow + sortedchinesecities1$absgrowth1980_1990[j]; j<-j-1};
+  i<-i+1
+  }
+print(i)
+
+
+ChineseCities<-subset(data1, Country=="China")
+ChineseCities$absgrowth1960_1970<-ChineseCities$pop1970-ChineseCities$pop1960
+sortedchinesecities2<-ChineseCities[order(ChineseCities$pop1970),]
+
+i<-length(ChineseCities$Index)/2
+sumgrowthabove<-0
+sumgrowthbelow<-0
+while(sumgrowthabove-sumgrowthbelow>=0) {
+  sumgrowthabove<-0;
+  sumgrowthbelow<-0;
+  j<-i+1;
+  while(j <= length(sortedchinesecities2$Index)) {sumgrowthabove <- sumgrowthabove + sortedchinesecities2$absgrowth1980_1990[j]; j<-j+1}; 
+  j<-i-1;
+  while(j >= 1) {sumgrowthbelow <- sumgrowthbelow + sortedchinesecities2$absgrowth1980_1990[j]; j<-j-1};
+  i<-i+1
+  }
+print(i)
+
+
+## Lets plot the top 50 cities population in 2010.
+
+top50<-sortedchinesecities[349:398, ]
+
+ggplot(top50, aes(x=reorder(UrbanAgglomeration, (pop2010)), y=pop2010)) + geom_bar(stat="identity", fill="darkred") + labs(x="Urban Agglomeration", y="Population in 2010 in millions") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("50 largest Chinese Urban Agglomerations in 2010") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(1000000, 2500000, 5000000, 7500000, 10000000, 15000000, 20000000, 25000000), labels=c(1, 2.5, 5, 7.5, 10, 15, 20, 25)) + coord_flip()
+
+```
+
+I want to know which of the top 50 Chinese cities moved most drastically in population ranking between 1980 and 2010. 
+
+```{r}
+sorted2010 <- ChineseCities[order(-ChineseCities$pop2010),]
+sorted2010 <- sorted2010[1:398, ]
+sorted1980 <- ChineseCities[order(-ChineseCities$pop1980),]
+sorted1980 <- sorted1980[1:398, ]
+
+sorted2010$rank10<-c(1:398)
+sorted1980$rank80<-c(1:398)
+
+sorted1980<-sorted1980[order(-sorted1980$pop2010), ]
+sorted1980$rank2010<-c(1:398)
+
+sorted1980$rankchange<-sorted1980$rank2010-sorted1980$rank80
+mostchanged<-sorted1980[order(-sorted1980$rankchange), ]
+mostchanged1<-subset(mostchanged, pop2010>1000000)
+mostchanged1<-mostchanged1[order(-abs(mostchanged1$rankchange)), ]
+
+ggplot(mostchanged1, aes(rankchange)) + geom_bar(binwidth=10, fill="darkred")
+```
+
+Lets do the same for Indian cities to see how different is the frequency distribution of the rankchange variable.
+
+```{r}
+indiancities <- subset(data1, Country=="India")
+sorted2010i <- indiancities[order(-indiancities$pop2010),]
+sorted1980i <- indiancities[order(-indiancities$pop1980),]
+
+sorted2010i$rank10<-c(1:length(sorted2010i$pop2010))
+sorted1980i$rank80<-c(1:length(sorted2010i$pop2010))
+
+sorted1980i<-sorted1980i[order(-sorted1980i$pop2010), ]
+sorted1980i$rank2010<-c(1:length(sorted2010i$pop2010))
+
+sorted1980i$rankchange<-sorted1980i$rank2010-sorted1980i$rank80
+mostchangedi<-sorted1980i[order(-sorted1980i$rankchange), ]
+mostchanged1i<-subset(mostchangedi, pop2010>1000000)
+mostchanged1i<-mostchanged1i[order(-abs(mostchanged1i$rankchange)), ]
+
+ggplot(mostchanged1i, aes(rankchange)) + geom_bar(binwidth=5, fill="darkred")
+```
+
+Now that we know the top cities that had the most drastic change in their population rank between 1980 and 2010, lets plot their growth trajectory to visually compare them.
+
+```{r}
+test<-data.frame(data1$Index, data1$UrbanAgglomeration, data1$pop1950, data1$pop1955, data1$pop1960, data1$pop1965, data1$pop1970, data1$pop1975, data1$pop1980, data1$pop1985, data1$pop1990, data1$pop1995, data1$pop2000, data1$pop2005, data1$pop2010, data1$pop2015, data1$pop2020, data1$pop2025, data1$pop2030)
+
+## I find the test$data.Index for the following cities:
+## Beijing                185
+## Shanghai               416
+## Huai'an                288
+## Fushun, Liaoning       245
+## Yancheng, Jiangsu      509
+## Shenzhen               427
+## Zhuhai                 559
+## Dongguan               231 
+## Ürümqi (Wulumqi)       467
+## Guangzhou, Guangdong   261
+## Kunming                330
+## Chongqing              212
+## Qiqihaer               402
+
+test1 <- subset(test, data1.Index %in% c(185, 416, 288, 245, 509, 427, 559, 231, 467, 261, 330, 212, 402))
+t<-subset(test1, select=c(-1))
+trans<-as.data1.frame(t(t))
+names(trans)<- c("Beijing", "Chongqing", "Dongguan", "Fushun", "Guangzhou", "Huaian", "Kunming", "Qiqihaer", "Shanghai", "Shenzhen", "Urumqi", "Yancheng", "Zhuhai")
+d<-trans[-1, ]
+d$year<-c(1950, 1955, 1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025, 2030)
+
+d$Beijing<-as.numeric(as.character(d$Beijing))
+d$Chongqing<-as.numeric(as.character(d$Chongqing))
+d$Dongguan<-as.numeric(as.character(d$Dongguan))
+d$Fushun<-as.numeric(as.character(d$Fushun))
+d$Guangzhou<-as.numeric(as.character(d$Guangzhou))
+d$Huaian<-as.numeric(as.character(d$Huaian))
+d$Kunming<-as.numeric(as.character(d$Kunming))
+d$Qiqihaer<-as.numeric(as.character(d$Qiqihaer))
+d$Shanghai<-as.numeric(as.character(d$Shanghai))
+d$Shenzhen<-as.numeric(as.character(d$Shenzhen))
+d$Urumqi<-as.numeric(as.character(d$Urumqi))
+d$Yancheng<-as.numeric(as.character(d$Yancheng))
+d$Zhuhai<-as.numeric(as.character(d$Zhuhai))
+
+
+
+library(reshape2)
+wide<-melt(d, id.vars="year", variable.name="city", value.name="population")
+wide$population<-as.numeric(wide$population)
+
+library(ggplot2)
+wide1<-subset(wide, wide$city=="Shenzhen" | wide$city=="Beijing" | wide$city=="Shanghai" | wide$city=="Dongguan" | wide$city=="Urumqi" | wide$city=="Fushun" | wide$city=="Qiqihaer")
+wide2<-subset(wide1, wide$year<2015)
+
+ggplot(wide2, aes(year, population)) + geom_line(stat="identity", aes(color=city)) + labs(x="Year", y="Population in millions") + ggtitle("Population growth in major Chinese Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(5000000, 10000000, 15000000, 20000000, 25000000), labels=c(5, 10, 15, 20, 25))
+```
+
+
+```{r}
+wide1<-subset(wide, wide$city=="Qiqihaer" | wide$city=="Urumqi" | wide$city=="Fushun" | wide$city=="Yancheng" | wide$city=="Zhuhai")
+wide2<-subset(wide1, wide$year<2015)
+
+ggplot(wide2, aes(year, population)) + geom_line(stat="identity", aes(color=city)) + labs(x="Year", y="Population in millions") + ggtitle("Population growth in major Chinese Urban Agglomerations") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(5000000, 10000000, 15000000, 20000000, 25000000), labels=c(5, 10, 15, 20, 25))
+```
+
+
+
+```{r}
+library(ggplot2)
+millionplus<-subset(sorted2010, pop2010>=1000000)
+ggplot(millionplus, aes(x=reorder(UrbanAgglomeration, (pop2010)), y=pop2010)) + geom_bar(stat="identity", fill="darkred") + labs(x="Urban Agglomeration", y="Population in 2010 in millions") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("Chinese Urban Agglomerations with million plus population") + theme(title=element_text(color="darkred", size=12), axis.title=element_text(size=11)) + scale_y_continuous(breaks=c(1000000, 2500000, 5000000, 7500000, 10000000, 15000000, 20000000, 25000000), labels=c(1, 2.5, 5, 7.5, 10, 15, 20, 25)) + coord_flip()
+```
+
